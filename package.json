@@ -1,0 +1,22 @@
+{
+  "name": "udacity-progressive-web-app",
+  "version": "1.0.0",
+  "description": "Weather Progressive Web App for the Udacity course",
+  "main": "scripts/app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/iraquitan/udacity-progressive-web-app.git"
+  },
+  "keywords": [
+    "pwa"
+  ],
+  "author": "Iraquitan Cordeiro Filho",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/iraquitan/udacity-progressive-web-app/issues"
+  },
+  "homepage": "https://github.com/iraquitan/udacity-progressive-web-app#readme"
+}
