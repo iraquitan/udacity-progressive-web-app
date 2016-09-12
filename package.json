@@ -18,5 +18,9 @@
   "bugs": {
     "url": "https://github.com/iraquitan/udacity-progressive-web-app/issues"
   },
-  "homepage": "https://github.com/iraquitan/udacity-progressive-web-app#readme"
+  "homepage": "https://github.com/iraquitan/udacity-progressive-web-app#readme",
+  "devDependencies": {
+    "browser-sync": "^2.15.0",
+    "gulp": "^3.9.1"
+  }
 }
