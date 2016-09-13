@@ -2,6 +2,90 @@
 (function() {
   'use strict';
 
+  // Inject data to the app
+  var injectedForecast = {
+    key: 'newyork',
+    label: 'New York, NY',
+    currently: {
+      time: 1453489481,
+      summary: 'Clear',
+      icon: 'partly-cloudy-day',
+      temperature: 52.74,
+      apparentTemperature: 74.34,
+      precipProbability: 0.20,
+      humidity: 0.77,
+      windBearing: 125,
+      windSpeed: 1.52
+    },
+    daily: {
+      data: [
+        {icon: 'clear-day', temperatureMax: 55, temperatureMin: 34},
+        {icon: 'rain', temperatureMax: 55, temperatureMin: 34},
+        {icon: 'snow', temperatureMax: 55, temperatureMin: 34},
+        {icon: 'sleet', temperatureMax: 55, temperatureMin: 34},
+        {icon: 'fog', temperatureMax: 55, temperatureMin: 34},
+        {icon: 'wind', temperatureMax: 55, temperatureMin: 34},
+        {icon: 'partly-cloudy-day', temperatureMax: 55, temperatureMin: 34}
+      ]
+    }
+  };
+
+  var db;
+  var request = indexedDB.open('ForecastDB');
+
+  request.onerror = function(event) {
+    console.error("openDb:", event.target.errorCode);
+  };
+  request.onsuccess = function(event) {
+    db = this.result;
+    console.log("openDb DONE");
+    var store = getObjectStore('selectedCities', 'readonly');
+
+    var countRequest = store.count();
+    countRequest.onsuccess = function() {
+      if (countRequest.result > 0) {
+        store.openCursor().onsuccess = function(event) {
+          var cursor = event.target.result;
+          if (cursor) {
+            app.selectedCities.push({'key': cursor.key, 'label': cursor.value.label});
+            cursor.continue();
+          }
+          app.selectedCities.forEach(function(city) {
+            app.getForecast(city.key, city.label);
+          });
+        };
+      } else {
+        app.updateForecastCard(injectedForecast);
+        app.selectedCities.push({key: injectedForecast.key, label: injectedForecast.label});
+        app.saveSelectedCities();
+      }
+    };
+  };
+
+  request.onupgradeneeded = function (event) {
+    console.log("openDb.onupgradeneeded");
+    var store = event.currentTarget.result.createObjectStore("selectedCities", { keyPath: "key" });
+    store.createIndex("cities", "key", { unique: true });
+  };
+
+  function getObjectStore(store_name, mode) {
+    var tx = db.transaction(store_name, mode);
+    return tx.objectStore(store_name);
+  }
+
+  function clearObjectStore(store_name) {
+    var store = getObjectStore(store_name, 'readwrite');
+    var req = store.clear();
+    req.onsuccess = function(evt) {
+      displayActionSuccess("Store cleared");
+      displayPubList(store);
+    };
+    req.onerror = function (evt) {
+      console.error("clearObjectStore:", evt.target.errorCode);
+      displayActionFailure(this.error);
+    };
+  }
+
   var weatherAPIUrlBase = 'https://publicdata-weather.firebaseio.com/';
 
   var app = {
@@ -41,6 +125,7 @@
     var label = selected.textContent;
     app.getForecast(key, label);
     app.selectedCities.push({key: key, label: label});
+    app.saveSelectedCities();
     app.toggleAddDialog(false);
   });
 
@@ -150,4 +235,10 @@
     });
   };
 
+  app.saveSelectedCities = function () {
+    var store = getObjectStore('selectedCities', 'readwrite');
+    app.selectedCities.forEach(function (city) {
+      store.put(city);
+    });
+  };
 })();
