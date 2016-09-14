@@ -198,5 +198,16 @@
         app.saveSelectedCities();
       }
     })
-  })
+  });
+
+  if ('serviceWorker' in navigator) {
+    console.log('Registering service worker...');
+    navigator.serviceWorker.register('sw.js')
+        .then(function () {
+          console.log('Service Worker registered');
+        })
+        .catch(function (err) {
+          console.error('Error registering Service Worker', err);
+        })
+  }
 })();
