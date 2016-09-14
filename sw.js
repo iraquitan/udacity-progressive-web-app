@@ -1,7 +1,8 @@
 /**
  * Created by iraquitan on 9/14/16.
  */
-var cacheName = 'weatherPWA-v1';
+var cacheName = 'weatherPWA-v2';
+var dataCacheName = 'weatherData-v2';
 var filesToCache = [
     '/',
     '/index.html',
@@ -21,6 +22,7 @@ var filesToCache = [
     '/images/thunderstorm.png',
     '/images/wind.png'
 ];
+var weatherAPIUrlBase = 'https://publicdata-weather.firebaseio.com/';
 
 self.addEventListener('install', function (event) {
     console.log('[ServiceWorker] Install');
@@ -37,7 +39,7 @@ self.addEventListener('activate', function (event) {
     event.waitUntil(
         caches.keys().then(function (keyList) {
             return Promise.all(keyList.map(function(key) {
-                if (key !== cacheName) {
+                if (key !== cacheName && key !== dataCacheName) {
                     console.log('[ServiceWorker] Removing old cache', key);
                     return caches.delete(key);
                 }
@@ -47,10 +49,23 @@ self.addEventListener('activate', function (event) {
 });
 
 self.addEventListener('fetch', function(event) {
-    console.log('[ServiceWorker] Fetch', event.request.url);
-    event.respondWith(
-        caches.match(event.request).then(function(response) {
-            return response || fetch(event.request);
-        })
-    );
+    if (event.request.url.startsWith(weatherAPIUrlBase)) {
+        event.respondWith(
+            fetch(event.request)
+                .then(function(response) {
+                    return caches.open(dataCacheName).then(function(cache) {
+                        cache.put(event.request.url, response.clone());
+                        console.log('[ServiceWorker] Fetched & Cached', event.request.url);
+                        return response;
+                    });
+                })
+        );
+    } else {
+        event.respondWith(
+            caches.match(event.request).then(function(response) {
+                console.log('[ServiceWorker] Fetch Only', event.request.url);
+                return response || fetch(event.request);
+            })
+        );
+    }
 });
