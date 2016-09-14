@@ -30,62 +30,6 @@
     }
   };
 
-  var db;
-  var request = indexedDB.open('ForecastDB');
-
-  request.onerror = function(event) {
-    console.error("openDb:", event.target.errorCode);
-  };
-  request.onsuccess = function(event) {
-    db = this.result;
-    console.log("openDb DONE");
-    var store = getObjectStore('selectedCities', 'readonly');
-
-    var countRequest = store.count();
-    countRequest.onsuccess = function() {
-      if (countRequest.result > 0) {
-        store.openCursor().onsuccess = function(event) {
-          var cursor = event.target.result;
-          if (cursor) {
-            app.selectedCities.push({'key': cursor.key, 'label': cursor.value.label});
-            cursor.continue();
-          }
-          app.selectedCities.forEach(function(city) {
-            app.getForecast(city.key, city.label);
-          });
-        };
-      } else {
-        app.updateForecastCard(injectedForecast);
-        app.selectedCities.push({key: injectedForecast.key, label: injectedForecast.label});
-        app.saveSelectedCities();
-      }
-    };
-  };
-
-  request.onupgradeneeded = function (event) {
-    console.log("openDb.onupgradeneeded");
-    var store = event.currentTarget.result.createObjectStore("selectedCities", { keyPath: "key" });
-    store.createIndex("cities", "key", { unique: true });
-  };
-
-  function getObjectStore(store_name, mode) {
-    var tx = db.transaction(store_name, mode);
-    return tx.objectStore(store_name);
-  }
-
-  function clearObjectStore(store_name) {
-    var store = getObjectStore(store_name, 'readwrite');
-    var req = store.clear();
-    req.onsuccess = function(evt) {
-      displayActionSuccess("Store cleared");
-      displayPubList(store);
-    };
-    req.onerror = function (evt) {
-      console.error("clearObjectStore:", evt.target.errorCode);
-      displayActionFailure(this.error);
-    };
-  }
-
   var weatherAPIUrlBase = 'https://publicdata-weather.firebaseio.com/';
 
   var app = {
@@ -236,9 +180,23 @@
   };
 
   app.saveSelectedCities = function () {
-    var store = getObjectStore('selectedCities', 'readwrite');
-    app.selectedCities.forEach(function (city) {
-      store.put(city);
-    });
+    localforage.setItem('selectedCities', app.selectedCities);
   };
+
+  document.addEventListener('DOMContentLoaded', function () {
+    localforage.getItem('selectedCities', function (err, userCities) {
+      if (userCities) {
+        app.selectedCities = userCities;
+        app.selectedCities.forEach(function (city) {
+          app.getForecast(city.key, city.label);
+        })
+      } else {
+        app.updateForecastCard(injectedForecast);
+        app.selectedCities = [
+            {key: injectedForecast.key, label: injectedForecast.label}
+            ];
+        app.saveSelectedCities();
+      }
+    })
+  })
 })();

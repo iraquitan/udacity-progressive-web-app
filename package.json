@@ -21,6 +21,7 @@
   "homepage": "https://github.com/iraquitan/udacity-progressive-web-app#readme",
   "devDependencies": {
     "browser-sync": "^2.15.0",
-    "gulp": "^3.9.1"
+    "gulp": "^3.9.1",
+    "localforage": "^1.4.2"
   }
 }
