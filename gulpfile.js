@@ -29,7 +29,7 @@ gulp.task('generate-sw', function () {
             './index.html',
             './images/*.{png,svg,gif,jpg}',
             './scripts/*.js',
-            './styles/*.css',
+            './styles/*.min.css',
             './node_modules/localforage/dist/localforage.min.js'
         ],
         stripPrefix: '.',
@@ -52,16 +52,16 @@ gulp.task('serve', ['generate-sw'], function() {
         notify: false,
         logPrefix: 'weatherPWA',
         server: ['.'],
-        // open: false,
+        open: false,
         browser: ['google chrome', 'firefox', 'safari']
     });
     gulp.watch([
         './*.html',
         './scripts/*.js',
-        './styles/*.css',
+        './styles/*.min.css',
         '!./service-worker.js',
         '!./gulpfile.js'
-    ], ['generate-sw'], browserSync.reload);
+    ], ['generate-sw'], reload);
 });
 
 gulp.task('default', ['serve']);
