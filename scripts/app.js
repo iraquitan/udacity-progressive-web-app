@@ -106,6 +106,14 @@
       app.container.appendChild(card);
       app.visibleCards[data.key] = card;
     }
+
+    var dateElem = card.querySelector('.date');
+    if (dateElem.getAttribute('data-dt') >= data.currently.time) {
+      return;
+    }
+    dateElem.setAttribute('data-dt', data.currently.time);
+    dateElem.textContent = new Date(data.currently.time * 1000);
+
     card.querySelector('.description').textContent = data.currently.summary;
     card.querySelector('.date').textContent =
       new Date(data.currently.time * 1000);
