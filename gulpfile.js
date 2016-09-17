@@ -29,8 +29,7 @@ gulp.task('generate-sw', function () {
             './index.html',
             './images/*.{png,svg,gif,jpg}',
             './scripts/*.js',
-            './styles/*.min.css',
-            './node_modules/localforage/dist/localforage.min.js'
+            './styles/*.min.css'
         ],
         stripPrefix: '.',
         runtimeCaching: [{
